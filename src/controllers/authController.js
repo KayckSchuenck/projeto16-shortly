@@ -31,12 +31,14 @@ export async function signIn (req,res){
     const {email,password}=req.body
 
     try{
-        const userExists=await connection.query('SELECT email,password FROM users WHERE email=$1',[email])
+        const userExists=await connection.query('SELECT email,password,id FROM users WHERE email=$1',[email])
         if(userExists.rows.length!==0||!bcrypt.compareSync(password,userExists.rows.password)) return res.sendStatus(401)
 
         const token=uuid()
-        res.status(200).send(token)
+        await connection.query("INSERT INTO sessions (userId,token) VALUES ($1,$2)",[userExists.rows.id,token])
         
+        res.status(200).send(token)
+
     } catch(e){
         res.status(500).send('Erro com o servidor')
     } 
