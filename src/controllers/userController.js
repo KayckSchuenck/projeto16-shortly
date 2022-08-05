@@ -1,21 +1,23 @@
 import connection from "../database.js"
 
-export default async function (req,res) {
+export default async function getUser(req,res) {
     const{userId}=res.locals
 
     try{
-        const urlQuery=await connection.query(`SELECT urls.id AS urlId,urls.url,urls."shortUrl",urls.views AS "visitCount",users.id,users.name
+        const {rows:userUrlQuery}=await connection.query(`SELECT urls.id AS urlId,urls.url,urls."shortUrl",urls.views AS "visitCount",users.id,users.name
         FROM urls
         JOIN users
         ON users.id=urls."userId"
         WHERE "userId"=$1
         `,[userId])
 
+        if(userUrlQuery.length===0) return res.sendStatus(404)
+
         const joinBody={
-            id:urlQuery.rows.id,
-            name:urlQuery.rows.name,
-            visitCount:urlQuery.map(e => e.visitCount).reduce((prev, curr) => prev + curr, 0),
-            shortenedUrls:urlQuery.rows.map(elem=>{
+            id:userUrlQuery.id,
+            name:userUrlQuery.name,
+            visitCount:userUrlQuery.map(e => e.visitCount).reduce((prev, curr) => prev + curr, 0),
+            shortenedUrls:userUrlQuery.map(elem=>{
                 return {
                     id:elem.urlId,
                     shortUrl,
