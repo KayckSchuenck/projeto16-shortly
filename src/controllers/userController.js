@@ -33,3 +33,13 @@ export default async function getUser(req,res) {
         res.status(500).send('Erro com o servidor')
     } 
 }
+
+export default async function getRanking(req,res) {
+    try{
+        const body=await connection.query('SELECT users.id,users.name,SUM(urls.views) as "visitCount",COUNT(urls."shortUrl") as "linksCount" FROM users LEFT JOIN urls ON users.id=urls."userId" GROUP BY users.id ORDER BY "linksCount" DESC LIMIT 10')
+        
+        res.status(200).send(body)
+    } catch(e){
+        res.status(500).send('Erro com o servidor')
+    } 
+}

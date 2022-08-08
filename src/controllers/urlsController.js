@@ -34,7 +34,7 @@ export async function postUrl(req,res){
       shortUrl:nanoid()
     }
 
-    await connection.query('INSERT INTO urls (url,"shortUrl",userId) VALUES $1,$2,$3',[url,response.shortUrl,userId])
+    await connection.query('INSERT INTO urls (url,"shortUrl","userId") VALUES ($1,$2,$3)',[url,response.shortUrl,userId])
 
     res.status(201).send(response)
 
