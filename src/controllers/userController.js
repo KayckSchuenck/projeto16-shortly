@@ -1,15 +1,10 @@
-import connection from "../database.js"
+import { userRepository } from "../repositories/userRepository"
 
 export default async function getUser(req,res) {
     const{userId}=res.locals
 
     try{
-        const {rows:userUrlQuery}=await connection.query(`SELECT urls.id AS urlId,urls.url,urls."shortUrl",urls.views AS "visitCount",users.id,users.name
-        FROM urls
-        JOIN users
-        ON users.id=urls."userId"
-        WHERE "userId"=$1
-        `,[userId])
+        const {rows:userUrlQuery}=await userRepository.getUser(userId)
 
         if(userUrlQuery.length===0) return res.sendStatus(404)
 
@@ -36,8 +31,7 @@ export default async function getUser(req,res) {
 
 export default async function getRanking(req,res) {
     try{
-        const body=await connection.query('SELECT users.id,users.name,SUM(urls.views) as "visitCount",COUNT(urls."shortUrl") as "linksCount" FROM users LEFT JOIN urls ON users.id=urls."userId" GROUP BY users.id ORDER BY "linksCount" DESC LIMIT 10')
-        
+        const body=await userRepository.getRanking()
         res.status(200).send(body)
     } catch(e){
         res.status(500).send('Erro com o servidor')

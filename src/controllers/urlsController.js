@@ -1,4 +1,3 @@
-import connection from "../database.js"
 import { nanoid } from 'nanoid'
 import {schemaPostUrl} from "../schemas/postUrlSchema.js"
 
