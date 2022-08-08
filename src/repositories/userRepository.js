@@ -1,7 +1,7 @@
 import connection from "../database.js"
 
 async function getUser(userId) {
-	return connection.query(`SELECT urls.id AS urlId,urls.url,urls."shortUrl",urls.views AS "visitCount",users.id,users.name
+	return connection.query(`SELECT urls.id AS "urlId",urls.url,urls."shortUrl",urls.views AS "visitCount",users.id,users.name
     FROM urls
     JOIN users
     ON users.id=urls."userId"

@@ -1,9 +1,8 @@
-import { schemaAuth } from "../schemas/schemas"
+import { schemaLogin } from "../schemas/schemas.js"
 
-export default async function validateAuth(req,res,next){
-    
+export default async function validateLogin(req,res,next){
     try{
-        const validation=schemaAuth.validate(req.body)
+        const validation=schemaLogin.validate(req.body)
         if(validation.error) return res.status(422).send("Erro com o objeto enviado")
         next()
 

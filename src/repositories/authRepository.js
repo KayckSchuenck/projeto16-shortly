@@ -1,15 +1,15 @@
-import connection from "../src/database.js";
+import connection from "../database.js";
 
 async function signUp(name,email,hashPassword){
     return connection.query('INSERT INTO users (name,email,password) VALUES ($1,$2,$3)',[name,email,hashPassword])
 }
 
 async function signInCheck(email){
-    return connection.query('SELECT email,password,id FROM users WHERE email=$1',[email])
+    return connection.query('SELECT password,id FROM users WHERE email=$1',[email])
 }
 
 async function signInPost(id,token){
-    return connection.query("INSERT INTO sessions ('userId',token) VALUES ($1,$2)",[id,token])
+    return connection.query('INSERT INTO sessions ("userId",token) VALUES ($1,$2)',[id,token])
         
 }
 

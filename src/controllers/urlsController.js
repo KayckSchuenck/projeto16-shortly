@@ -1,27 +1,26 @@
 import { nanoid } from 'nanoid'
-import {schemaPostUrl} from "../schemas/postUrlSchema.js"
+import {schemaPostUrl} from "../schemas/schemas.js"
+import { urlRepository } from '../repositories/urlRepository.js'
 
 export async function deleteUrl(req,res){
     const {userId}=res.locals
-    const {url}=req.params
-
+    const {id}=req.params
     try{
-        const {rows:shortUrl}=await connection.query('SELECT "shortUrl",userId FROM urls WHERE "shortUrl"=$1',[url])
+        const {rows:shortUrl}=await urlRepository.getShortUrl(id)
 
         if(shortUrl.length===0) return res.sendStatus(404)
-        if(shortUrl.userId!==userId) return res.sendStatus(401)
+        if(shortUrl[0].userId!==userId) return res.sendStatus(401)
 
-        await connection.query('DELETE FROM urls WHERE "shortUrl"=$1',[url])
-
+        await urlRepository.deleteUrl(id)
         res.sendStatus(204)
 
     } catch(e){
+      console.log(e)
       res.status(500).send('Erro com o servidor')
     } 
 }
 
 export async function postUrl(req,res){
-  
   const {userId}=res.locals
   const {url}=req.body
 
@@ -29,13 +28,10 @@ export async function postUrl(req,res){
     const validation=schemaPostUrl.validate(req.body)
     if(validation.error) return res.status(422).send("Erro com o objeto enviado")
 
-    const response={
-      shortUrl:nanoid()
-    }
+    const hashUrl=nanoid()
+    await urlRepository.postUrl(url,hashUrl,userId)
 
-    await connection.query('INSERT INTO urls (url,"shortUrl","userId") VALUES ($1,$2,$3)',[url,response.shortUrl,userId])
-
-    res.status(201).send(response)
+    res.status(201).send(hashUrl)
 
   } catch(e){
       res.status(500).send('Erro com o servidor')
@@ -46,8 +42,7 @@ export async function getUrlbyId(req,res){
   const {id}=req.params
 
   try{
-    const {rows:urlTable}=await connection.query('SELECT id,"shortUrl",url FROM urls WHERE id=$1',[id])
-
+    const {rows:urlTable}=await urlRepository.getUrlbyId(id)
     if(urlTable.length===0) return res.sendStatus(404)
 
     res.status(200).send(urlTable)
@@ -61,16 +56,16 @@ export async function redirectUrl(req,res){
   const {shortUrl}=req.params
   
   try{
-    const {rows:requiredUrl} = await connection.query('SELECT url,"shortUrl" FROM urls WHERE "shortUrl"=$1',[shortUrl])
-
+    const {rows:requiredUrl} = await urlRepository.redirectUrl(shortUrl)
     if(requiredUrl.length===0) return res.sendStatus(404)
 
-    const updatedViews=requiredUrl.views+1
-    await connection.query('UPDATE urls SET views=$1 WHERE "shortUrl"=$2',[updatedViews,shortUrl])
+    const updatedViews=Number(requiredUrl[0].views)+1
+    await urlRepository.updateUrl(updatedViews,shortUrl)
 
     res.redirect(requiredUrl.url)
 
   } catch(e){
+      console.log(e)
       res.status(500).send('Erro com o servidor')
   } 
 }

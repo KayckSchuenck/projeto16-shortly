@@ -1,14 +1,14 @@
-import { schemaSignUp } from "../schemas/postUrlSchema.js";
-import connection from "../database.js";
+import { validationRepository } from "../repositories/validationRepository.js";
+import { schemaSignUp } from "../schemas/schemas.js";
 
 export default async function validateSignUp(req,res,next){
-    const {password,confirmPassword}=req.body
+    const {password,confirmPassword,email}=req.body
     
     try{
         const validation=schemaSignUp.validate(req.body)
         if(validation.error||password!==confirmPassword) return res.status(422).send("Erro com o objeto enviado ou senhas conflitantes")
     
-        const emailAlreadyExists=await connection.query('SELECT email FROM users WHERE email=$1',[email])
+        const emailAlreadyExists=await validationRepository.signUpValidation(email)
         if(emailAlreadyExists.rows.length!==0) return res.sendStatus(409)
 
         next()

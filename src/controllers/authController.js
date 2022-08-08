@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import {v4 as uuid} from 'uuid'
-import { authRepository } from '../repositories/authRepository';
+import { authRepository } from '../repositories/authRepository.js';
 
 export async function signUp (req,res){
     const {name,email,password}=req.body
@@ -21,14 +21,15 @@ export async function signIn (req,res){
 
     try{
         const {rows:userExists}=await authRepository.signInCheck(email)
-        if(userExists.length!==0||!bcrypt.compareSync(password,userExists.password)) return res.sendStatus(401)
+        if(userExists.length===0||!bcrypt.compareSync(password,userExists[0].password)) return res.sendStatus(401)
 
         const token=uuid()
-        await authRepository.signInPost(userExists.id,token)
+        await authRepository.signInPost(userExists[0].id,token)
 
         res.status(200).send(token)
 
     } catch(e){
+        console.log(e)
         res.status(500).send('Erro com o servidor')
     } 
 }
